@@ -10,131 +10,148 @@ Original file is located at
 """
 
 
-
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from scipy.spatial.distance import pdist
+from scipy.cluster.hierarchy import *
+from matplotlib import pyplot as plt
+from matplotlib import rc
+import numpy as np
+from sklearn.cluster import KMeans
 
 # Загрузка данных
 def load_data():
     # Используйте полный путь к вашему файлу
-    data = pd.read_csv("/content/areaburntbywildfiresbyweek new.csv")
+    data = pd.read_excel(r'C:\Users\Сергей\Desktop\project\wb_teapot.xlsx')
     return data
 
 # Функция для отображения описания полей данных
-def show_data_description(data):
+def show_data_description(df):
     st.subheader("Описание полей данных:")
     st.write("Этот раздел содержит описание каждого поля в исходных данных.")
     st.write("Пожалуйста, ознакомьтесь с ним перед анализом данных.")
 
     # Описание полей
-    data_description = {
-        "Entity": "Страна",
-        "Code": "Код страны",
-        "Year": "Год",
-        "area burnt by wildfires in 2024": "Площадь, сгоревшая от лесных пожаров в 2024 году",
-        "burnt by wildfires in 2023": "Площадь, сгоревшая от лесных пожаров в 2023 году",
-        "burnt by wildfires in 2022": "Площадь, сгоревшая от лесных пожаров в 2022 году",
-        "burnt by wildfires in 2021": "Площадь, сгоревшая от лесных пожаров в 2021 году",
-        "burnt by wildfires in 2020": "Площадь, сгоревшая от лесных пожаров в 2020 году",
-        "area burnt by wildfires in 2019": "Площадь, сгоревшая от лесных пожаров в 2019 году",
-        "a burnt by wildfires in 2018": "Площадь, сгоревшая от лесных пожаров в 2018 году"
+    df_description = {
+        "id": "Номер",
+        "Review": "Количество отзывов",
+        "Star": "Оценка (0 - не было оценок)",
+        "Value": "Стоимость с учетом скидки",
+        "brandId": "Код бренда",
+        "brandName": "Бренд",
+        "goodsName": "Наименование товара",
+        "isSoldOut": "Распродажа",
+        "link": "Ссылка",
+        "lowQuantity": "Мало в остатках",
+        "ordersCount": "Исторические продажи, штук, с момента появления на маркетплейсе",
+        "price": "Стоимость без скидок",
+        "qualityRate": "Оценка качества/ удовлетворенность пользователей",
+        "Вес с упаковкой (кг)": "Вес с упаковкой (кг)",
+        "Длина кабеля": "Длина кабеля",
+        "Количество температурных режимов": "Количество температурных режимов",
+        "Материал корпуса": "Материал корпуса",
+        "Модель": "Модель",
+        "Мощность устройства": "Мощность устройства",
+        "Объем чайника": "Объем чайника",
+        "Страна бренда": "Страна бренда",
+        "Страна производитель": "Страна производитель",
+        "Цвет": "Цвет",
+        "sale_june": "Продажи за июнь 2020 года"
     }
 
     # Вывод описания полей
-    for column, description in data_description.items():
+    for column, description in df_description.items():
         st.write(f"**{column}**: {description}")
 
 # Функция для анализа и предобработки данных
-def data_analysis(data):
+def data_analysis(df):
     st.subheader("Анализ и предобработка данных:")
     st.write("Этот раздел содержит анализ и предобработку данных перед их использованием в анализе и визуализации.")
 
     # Поиск нулевых значений
     st.write("### Нулевые значения:")
-    st.write(data.isnull().sum())
+    st.write(df.isnull().sum())
 
     # Количество уникальных значений для любого столбца
     st.write("### Количество уникальных значений для каждого столбца:")
-    st.write(data.nunique())
+    st.write(df.nunique())
 
     # Описательная статистика данных
     st.write("### Описательная статистика данных:")
-    st.write(data.describe())
+    st.write(df.describe())
 
-    # Количество всех категорий в виде графиков
-    st.write("### Количество всех категорий в виде графиков:")
-    categorical_columns = data.select_dtypes(include=['object']).columns.tolist()
-    for column in categorical_columns:
-        plt.figure(figsize=(10, 6))
-        sns.countplot(x=column, data=data)
-        plt.title(f"Распределение значений по категориям в столбце '{column}'")
-        plt.xticks(rotation=45)
-        plt.xlabel(column)
-        plt.ylabel("Количество")
-        st.pyplot(plt)
+# Функция для подготовки
+def data_preporation(df):
+    st.subheader("Подготовка данных:")
+    st.write("Этот раздел содержит подготовку данных для кластерного анализа.")
 
-# Функция для визуализации распределения выбранных категорий и выделения выбросов
-def data_visualization(data):
-    st.subheader("Визуализация:")
-    st.write("Этот раздел содержит визуализацию данных для анализа распределения и выявления выбросов.")
+    col=['Review', 'Star', 'ordersCount']
+    st.write('Колонки, которые мы будем использовать:', col)
+    pd.options.mode.chained_assignment = None 
+    df[col].fillna(0, inplace=True)
+    
+    st.write("Таблица корреляции:")
+    from pandas.plotting import scatter_matrix
+    scatter_matrix(df[col], alpha=0.05, figsize=(10, 10));
+    df[col].corr()   
+    
+def df_k(df):
+    st.subheader("Метод k средних:")
+    st.write("Этот раздел содержит кластерный анализ методом k средних.")
+    col=['Review', 'Star', 'ordersCount']
+    # загружаем библиотеку препроцесинга данных
+    # эта библиотека автоматически приведен данные к нормальным значениям
+    from sklearn import preprocessing
+    dataNorm = preprocessing.MinMaxScaler().fit_transform(df[col].values)   
 
-    # Выбор категорий для визуализации
-    selected_columns = st.multiselect("Выберите столбцы для визуализации:", data.columns)
+    # Вычислим расстояния между каждым набором данных,
+    # т.е. строками массива data_for_clust
+    # Вычисляется евклидово расстояние (по умолчанию)
+    data_dist = pdist(dataNorm, 'euclidean')
+    
+    data_linkage = linkage(data_dist, method='average')  
 
-    if selected_columns:
-        for column in selected_columns:
-            # Визуализация распределения выбранной категории
-            plt.figure(figsize=(10, 6))
-            sns.histplot(data[column], bins=20, kde=True)
-            plt.title(f"Распределение значений в столбце '{column}'")
-            plt.xlabel(column)
-            plt.ylabel("Количество")
-            st.pyplot(plt)
+    # Метод локтя. Позволячет оценить оптимальное количество сегментов.
+    # Показывает сумму внутри групповых вариаций
+    last = data_linkage[-10:, 2]
+    last_rev = last[::-1]
+    idxs = np.arange(1, len(last) + 1)
+    plt.plot(idxs, last_rev)
+    
+    acceleration = np.diff(last, 2)  
+    acceleration_rev = acceleration[::-1]
+    plt.plot(idxs[:-2] + 1, acceleration_rev)
+    plt.show()
+    k = acceleration_rev.argmax() + 2 
+    print("Рекомендованное количество кластеров:", k)
 
-            # Выделение выбросов
-            plt.figure(figsize=(10, 6))
-            sns.boxplot(x=data[column])
-            plt.title(f"Выделение выбросов в столбце '{column}'")
-            plt.xlabel(column)
-            st.pyplot(plt)
+    nClust=6
 
-# Функция для обучения и оценки классификационной модели
-def train_and_evaluate_model(data):
-    st.subheader("Обучение и оценка результатов прогнозирования:")
-    st.write("Этот раздел содержит обучение классификационной модели и оценку ее результатов.")
-
-    # Разделение данных на признаки (X) и целевую переменную (y)
-    X = data.drop(["Code", "Year", "Entity"], axis=1)  # Исключаем ненужные столбцы
-    y = data["Code"]
-
-    # Разделение данных на обучающий и тестовый наборы
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Обучение модели
-    model = RandomForestClassifier(random_state=42)
-    model.fit(X_train, y_train)
-
-    # Предсказание на тестовом наборе
-    y_pred = model.predict(X_test)
-
-    # Оценка результатов
-    st.write("### Матрица путаницы:")
-    st.write(confusion_matrix(y_test, y_pred))
-
-    st.write("### Отчет о классификации:")
-    st.write(classification_report(y_test, y_pred))
-
-    st.write("### Оценка точности:")
-    st.write(f"Точность модели: {accuracy_score(y_test, y_pred)}")
-
+    # строим кластеризаци методом KMeans
+    km = KMeans(n_clusters=nClust).fit(dataNorm)
+    # выведем полученное распределение по кластерам
+    # так же номер кластера, к котрому относится строка, так как нумерация начинается с нуля, выводим добавляя 1
+    km.labels_ +1
+    st.write("Отношение обзоров и количесва заказов.")
+    x=0 # Чтобы построить диаграмму в разных осях, меняйте номера столбцов
+    y=2 #
+    centroids = km.cluster_centers_
+    plt.figure(figsize=(10, 8))
+    plt.scatter(dataNorm[:,x], dataNorm[:,y], c=km.labels_, cmap='flag')
+    plt.scatter(centroids[:, x], centroids[:, y], marker='*', s=300,
+                c='r', label='centroid')
+    plt.xlabel(col[x])
+    plt.ylabel(col[y]);
+    plt.show()
+    st.write("Таблица средних по кластерам.")
+    # к оригинальным данным добавляем номера кластеров
+    df['KMeans']=km.labels_+1
+    res=df.groupby('KMeans')[col].mean()
+    res['Количество']=df.groupby('KMeans').size().values
+    res
 # Заголовок
-st.title("Анализ данных")
-
+st.title("Кластерный анализ")
+    
 # Загрузка данных
 data = load_data()
 
@@ -146,10 +163,8 @@ st.write(data)
 show_data_description(data)
 
 # Анализ и предобработка данных
-data_analysis(data)
+data_preporation(data)
 
 # Визуализация
-data_visualization(data)
+df_k(data)
 
-# Обучение и оценка результатов прогнозирования
-train_and_evaluate_model(data)
