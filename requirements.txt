@@ -2,9 +2,9 @@ streamlit
 io
 pandas
 numpy
-scipy.stats
+scipy
 warnings
-matplotlib.pyplot
+matplotlib
 seaborn
-sklearn.feature_extraction
-sklearn.preprocessing
+sklearn
+
