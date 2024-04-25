@@ -9,4 +9,3 @@ KMeans
 pyplot
 rc
 pdist
-*
