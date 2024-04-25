@@ -5,3 +5,8 @@ scipy.cluster.hierarchy
 matplotlib
 numpy
 sklearn.cluster
+KMeans
+pyplot
+rc
+pdist
+*
