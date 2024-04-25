@@ -26,7 +26,7 @@ import scipy.stats
 # Загрузка данных
 def load_data():
     # Используйте полный путь к вашему файлу
-    data = pd.read_csv('/content/star.csv', encoding='utf-8')
+    data = pd.read_csv(r'C:\Users\Сергей\Desktop\6 class csv.csv', encoding='utf-8')
     data.drop_duplicates(inplace=True)
     data = data.reset_index()
     return data
