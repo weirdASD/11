@@ -1,2 +1,7 @@
 streamlit
-tensorflow-cpu
+scipy.spatial.distance
+scipy.cluster.hierarchy
+scipy.cluster.hierarchy
+matplotlib
+numpy
+sklearn.cluster
