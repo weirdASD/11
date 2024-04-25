@@ -1,11 +1,10 @@
 streamlit
-scipy.spatial.distance
-scipy.cluster.hierarchy
-scipy.cluster.hierarchy
+pandas
 matplotlib
 numpy
-sklearn.cluster
-KMeans
+sklearn
 pyplot
-rc
-pdist
+seaborn
+warnings
+scipy
+sklearn
